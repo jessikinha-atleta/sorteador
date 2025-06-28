@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sorteador de Números</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.4);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 16px;
+      text-align: left;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #00d2ff;
+      color: #000;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #00aacc;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      min-height: 80px;
+    }
+
+    .loading-number {
+      font-size: 28px;
+      font-weight: bold;
+      color: #ffeb3b;
+      animation: blink 0.3s infinite alternate;
+    }
+
+    @keyframes blink {
+      0% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sorteador</h1>
+    <label for="inicio">Número Inicial:</label>
+    <input type="number" id="inicio" min="0" required>
+
+    <label for="fim">Número Final:</label>
+    <input type="number" id="fim" min="1" required>
+
+    <label for="qtd">Quantidade de Prêmios (máx 5):</label>
+    <select id="qtd">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+
+    <button onclick="sortear()">Sortear</button>
+    <button onclick="limpar()">Limpar</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function formatarNumero(num, digitos) {
+      return num.toString().padStart(digitos, '0');
+    }
+
+    function sortear() {
+      const inicio = parseInt(document.getElementById('inicio').value);
+      const fim = parseInt(document.getElementById('fim').value);
+      const qtd = parseInt(document.getElementById('qtd').value);
+      const result = document.getElementById('result');
+
+      result.innerHTML = "";
+
+      if (isNaN(inicio) || isNaN(fim) || fim <= inicio) {
+        result.innerHTML = "Informe um intervalo válido.";
+        return;
+      }
+
+      const intervalo = fim - inicio + 1;
+
+      if (qtd > intervalo) {
+        result.innerHTML = "Intervalo muito pequeno para essa quantidade de sorteios.";
+        return;
+      }
+
+      // Define o número de dígitos com base no número final
+      const digitos = fim.toString().length;
+
+      const numerosSorteados = [];
+      const usados = new Set();
+      let sorteioAtual = 0;
+
+      function animarSorteio() {
+        if (sorteioAtual >= qtd) return;
+
+        let animacao = 0;
+        const tempoAnimacao = 3000 + Math.random() * 500;
+        const display = document.createElement('div');
+        display.className = 'loading-number';
+        display.textContent = '...';
+        result.appendChild(display);
+
+        const intervaloAnim = setInterval(() => {
+          let temp = Math.floor(Math.random() * (fim - inicio + 1)) + inicio;
+          display.textContent = formatarNumero(temp, digitos);
+          animacao += 50;
+          if (animacao >= tempoAnimacao) {
+            clearInterval(intervaloAnim);
+
+            let final;
+            do {
+              final = Math.floor(Math.random() * (fim - inicio + 1)) + inicio;
+            } while (usados.has(final));
+
+            usados.add(final);
+            numerosSorteados.push(final);
+            display.classList.remove('loading-number');
+            display.textContent = `${sorteioAtual + 1}º prêmio: ${formatarNumero(final, digitos)}`;
+            sorteioAtual++;
+            animarSorteio();
+          }
+        }, 50);
+      }
+
+      animarSorteio();
+    }
+
+    function limpar() {
+      document.getElementById('inicio').value = "";
+      document.getElementById('fim').value = "";
+      document.getElementById('qtd').value = "1";
+      document.getElementById('result').innerHTML = "";
+    }
+  </script>
+</body>
+</html>
